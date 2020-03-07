@@ -46,7 +46,15 @@ def extract_names(filename):
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
     names = []
-    # +++your code here+++
+    
+    for file in filename:
+        with open(file) as file:
+            text = file.read()
+        year_match = re.search(r'\d\d\d\d</h3>', text)
+        year = re.search(r'\d\d\d\d', year_match.group())
+        names.append(year.group())
+
+
     return names
 
 
@@ -66,12 +74,14 @@ def main(args):
     parser = create_parser()
     # Run the parser to collect command-line arguments into a NAMESPACE called 'ns'
     ns = parser.parse_args(args)
+    print(ns)
 
     if not ns:
         parser.print_usage()
         sys.exit(1)
 
     file_list = ns.files
+    extract_names(file_list)
 
     # option flag
     create_summary = ns.summaryfile
