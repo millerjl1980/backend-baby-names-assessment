@@ -53,8 +53,18 @@ def extract_names(filename):
         year_match = re.search(r'\d\d\d\d</h3>', text)
         year = re.search(r'\d\d\d\d', year_match.group())
         names.append(year.group())
-
-
+        name_lines = re.findall(r'<td>(\d+)</td><td>(\w+)</td>\<td>(\w+)</td>', text)
+        names_and_rank = {}
+        for line in name_lines:
+            (rank, name1, name2) = line
+            if name1 not in names_and_rank:
+                names_and_rank[name1] = rank
+            if name2 not in names_and_rank:
+                names_and_rank[name2] = rank
+        names_by_rank = sorted(names_and_rank.keys())
+        
+        for each in names_by_rank:
+            names.append(each + " " + names_and_rank[each])
     return names
 
 
@@ -81,7 +91,8 @@ def main(args):
         sys.exit(1)
 
     file_list = ns.files
-    extract_names(file_list)
+    print(extract_names(file_list))
+    
 
     # option flag
     create_summary = ns.summaryfile
