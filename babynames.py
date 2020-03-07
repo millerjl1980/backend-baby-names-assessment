@@ -84,18 +84,22 @@ def main(args):
     parser = create_parser()
     # Run the parser to collect command-line arguments into a NAMESPACE called 'ns'
     ns = parser.parse_args(args)
-    print(ns)
 
     if not ns:
         parser.print_usage()
         sys.exit(1)
 
-    file_list = ns.files
-    print(extract_names(file_list))
-    
-
+    names_list = extract_names(ns.files)
     # option flag
     create_summary = ns.summaryfile
+
+    if create_summary:
+        with open(ns.files[0] + '.summary', 'w') as wf:
+            for each in names_list:
+                wf.write(each + '\n')
+    else:
+        for each in names_list:
+            print(each)
 
     # For each filename, call `extract_names` with that single file.
     # Format the resulting list a vertical list (separated by newline \n)
