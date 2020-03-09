@@ -42,39 +42,42 @@ Suggested milestones for incremental development:
 def extract_names(filename):
     """
     Given a single file name for babyXXXX.html, returns a single list starting
-    with the year string followed by the name-rank strings in alphabetical order.
+    with the year string followed by the name-rank strings in alphabetical
+    order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
     names = []
-    
-    for file in filename:
-        with open(file) as file:
-            text = file.read()
-        year_match = re.search(r'\d\d\d\d</h3>', text)
-        year = re.search(r'\d\d\d\d', year_match.group())
-        names.append(year.group())
-        name_lines = re.findall(r'<td>(\d+)</td><td>(\w+)</td>\<td>(\w+)</td>', text)
-        names_and_rank = {}
-        for line in name_lines:
-            (rank, name1, name2) = line
-            if name1 not in names_and_rank:
-                names_and_rank[name1] = rank
-            if name2 not in names_and_rank:
-                names_and_rank[name2] = rank
-        names_by_rank = sorted(names_and_rank.keys())
-        
-        for each in names_by_rank:
-            names.append(each + " " + names_and_rank[each])
+
+    # for file in filename:
+    with open(filename) as file:
+        text = file.read()
+    year_match = re.search(r'Popularity\sin\s(\d\d\d\d)', text)
+    year = year_match.group(1)
+    names.append(year)
+    name_lines = re.findall(
+        r'<td>(\d+)</td><td>(\w+)</td>\<td>(\w+)</td>', text)
+    names_and_rank = {}
+    for line in name_lines:
+        (rank, name1, name2) = line
+        if name1 not in names_and_rank:
+            names_and_rank[name1] = rank
+        if name2 not in names_and_rank:
+            names_and_rank[name2] = rank
+    names_by_rank = sorted(names_and_rank.keys())
+    for each in names_by_rank:
+        names.append(each + " " + names_and_rank[each])
     return names
 
 
 def create_parser():
     """Create a cmd line parser object with 2 argument definitions"""
-    parser = argparse.ArgumentParser(description="Extracts and alphabetizes baby names from html.")
+    parser = argparse.ArgumentParser(
+        description="Extracts and alphabetizes baby names from html.")
     parser.add_argument(
         '--summaryfile', help='creates a summary file', action='store_true')
     # The nargs option instructs the parser to expect 1 or more filenames.
-    # It will also expand wildcards just like the shell, e.g. 'baby*.html' will work.
+    # It will also expand wildcards just like the shell, e.g. 'baby*.html'
+    # will work.
     parser.add_argument('files', help='filename(s) to parse', nargs='+')
     return parser
 
@@ -82,24 +85,37 @@ def create_parser():
 def main(args):
     # Create a command-line parser object with parsing rules
     parser = create_parser()
-    # Run the parser to collect command-line arguments into a NAMESPACE called 'ns'
+    # Run the parser to collect command-line arguments into a NAMESPACE called
+    # 'ns'
+    summary = False
+    if args[0] == '--summaryfile':
+        summary = True
+        del args[0]
     ns = parser.parse_args(args)
 
     if not ns:
         parser.print_usage()
         sys.exit(1)
 
-    names_list = extract_names(ns.files)
-    # option flag
-    create_summary = ns.summaryfile
+    for filename in args:
+        names = extract_names(filename)
+        text = '\n'.join(names)
 
-    if create_summary:
-        with open(ns.files[0] + '.summary', 'w') as wf:
-            for each in names_list:
-                wf.write(each + '\n')
-    else:
-        for each in names_list:
-            print(each)
+        if summary:
+            with open(filename + '.summary', 'w') as wf:
+                wf.write(text)
+        else:
+            print(text)
+
+    # names_list = extract_names(ns.files[0])
+    # # option flag
+    # create_summary = ns.summaryfile
+
+    # if create_summary:
+
+    # else:
+    #     for each in names_list:
+    #         print(each)
 
     # For each filename, call `extract_names` with that single file.
     # Format the resulting list a vertical list (separated by newline \n)
